@@ -4,14 +4,22 @@ import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
 // READ DATA FROM FILE
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
+const checkId = (req, res, next, val) => {
+  if (+req.params.id > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+  next();
+};
+
 const getAllTours = (req, res) => {
-  console.log('req received!!!!!!!!!!!');
   res.status(200).json({
     message: 'success',
     results: tours.length,
@@ -23,12 +31,6 @@ const getAllTours = (req, res) => {
 const getTour = (req, res) => {
   const id = +req.params.id;
   const targetTour = tours.find((tour) => tour.id === id);
-  if (!targetTour) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid Id',
-    });
-  }
   res.status(200).json({
     message: 'success',
     requestedAt: req.requestTime,
@@ -42,27 +44,20 @@ const addNewTour = (req, res) => {
   const newTour = Object.assign({ id: newId }, req.body);
   tours.push(newTour);
   fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
+    `${__dirname}/../dev-data/data/tours-simple.json`,
     JSON.stringify(tours),
     (err) => {
-      if (err) console.log(err);
-      res.status(201).json({
-        status: 'success',
-        data: { tour: newTour },
-      });
+      if (err) console.log(err.message);
     }
   );
+  res.status(201).json({
+    status: 'success',
+    data: { tour: newTour },
+  });
 };
 const updateTour = (req, res) => {
   const id = +req.params.id;
-  console.log(id);
   const tourToUpdate = tours.find((tour) => tour.id === id);
-  if (!tourToUpdate) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid Id',
-    });
-  }
   const newTour = req.body;
   Object.keys(newTour).forEach((key) => {
     tourToUpdate[key] = newTour[key];
@@ -85,22 +80,17 @@ const updateTour = (req, res) => {
 };
 const deleteTour = (req, res) => {
   tours.splice(req.params.id, 1);
-  if (!req.params.id) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
   fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
+    `${__dirname}/../dev-data/data/tours-simple.json`,
     JSON.stringify(tours),
     (err) => {
-      res.status(200).json({
-        status: 'success',
-        message: 'Tour Deleted Successfully',
-      });
+      console.log(err);
     }
   );
+  res.status(200).json({
+    status: 'success',
+    message: 'Tour Deleted Successfully',
+  });
 };
 
-export { getAllTours, getTour, addNewTour, updateTour, deleteTour };
+export { getAllTours, getTour, addNewTour, updateTour, deleteTour, checkId };
