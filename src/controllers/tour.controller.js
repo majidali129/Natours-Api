@@ -40,7 +40,28 @@ const getTour = asyncHandler(async (req, res) => {
   });
 });
 
-const updateTour = (req, res) => {};
+const updateTour = asyncHandler(async (req, res) => {
+  try {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      runValidators: true
+    });
+    res.status(200).json({
+      status: 'success',
+      message: 'Tour updated successfully',
+      data: {
+        tour
+      }
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'Not found',
+      data: {
+        tour
+      }
+    });
+  }
+});
 
 const deleteTour = asyncHandler(async (req, res) => {
   try {
