@@ -1,33 +1,40 @@
-// {
-//   "extends": [
-//     "eslint:recommended",
-//     "airbnb-base",
-//     "plugin:prettier/recommended"
-//   ],
-//   "plugins": ["import", "node", "prettier"],
-//   "env": {
-//     "node": true,
-//     "es2015": true,
-//     "mongo": true
-//   },
-//   "rules": {
-//     "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
-//     "import/extensions": ["error", "ignorePackages", { "js": "always" }],
-//       "prettier/prettier": ["error", { "endOfLine": "auto" }],
-//       "spaced-comment": "off",
-//       "no-console": "warn",
-//       "consistent-return": "off",
-//       "func-names": "off",
-//       "object-shorthand": "off",
-//       "no-process-exit": "off",
-//       "no-param-reassign": "off",
-//       "no-return-await": "off",
-//       "no-underscore-dangle": "off",
-//       "class-methods-use-this": "off",
-//       "prefer-destructuring": ["error", { "object": true, "array": false }],
-//       "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }],
-//       "parserOptions": {
-//         "sourceType": "module",
-//         "ecmaVersion": "latest"
-//       }
-// }}
+
+{
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true
+    },
+    "extends": ["airbnb-base", "eslint:recommended", "plugin:node/recommended"],
+    "overrides": [],
+    "parserOptions": {
+      // Only ESLint 6.2.0 and later support ES2020.
+      "ecmaVersion": 2020
+    },
+    "rules": {
+      "import/no-extraneous-dependencies": ["error", {"devDependencies": true}],
+      "prettier/prettier": ["error", { "endOfLine": "auto" }],
+      "node/prefer-global/url-search-params": ["error", "always"],
+      "node/file-extension-in-import": ["error", {"ignorePackages": true} ],
+      "node/no-unsupported-features/node-builtins": "off",
+      "prefer-destructuring": ["error", { "object": true, "array": false }],
+      "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }],
+      "node/prefer-global/console": ["error", "always"],
+      "node/prefer-global/process": ["error", "always"],
+      "node/prefer-global/buffer": ["error", "always"],
+      "node/no-unsupported-features/es-syntax": "off",
+      "node/prefer-global/url": ["error", "always"],
+      "max-len": ["error", { "code": 400 }],
+      "no-unsafe-optional-chaining": "off",
+      "import/prefer-default-export": "off",
+      "node/prefer-promises/dns": "error",
+      "comma-dangle": ["error", "never"],
+      "node/prefer-promises/fs": "off",
+      "no-underscore-dangle": "off",
+      "node/exports-style": "off",
+      "consistent-return": "off",
+      "linebreak-style": "off",
+      "func-names": "off"
+    }
+  }
+
