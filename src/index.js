@@ -3,9 +3,8 @@ import { app } from './app.js';
 import { connectDB } from './db/index.js';
 
 dotenv.config({
-  path: './config.env',
+  path: './config.env'
 });
-
 // DB Connection Setup
 connectDB()
   .then(() => {
