@@ -40,7 +40,6 @@ const addNewTour = asyncHandler(async (req, res, next) => {
   const newTour = await Tour.create(req.body);
   res.status(201).json({
     status: 'success',
-    message: 'Tour created successfully',
     data: {
       tour: newTour
     }
@@ -52,7 +51,9 @@ const updateTour = asyncHandler(async (req, res, next) => {
     runValidators: true,
     new: true
   });
-  if (!tour) return next(new appError('Tour not found for that ID', 404));
+  if (!tour) {
+    return next(new appError('Tour not found for that ID', 404))
+  };
 
   res.status(200).json({
     status: 'success',
