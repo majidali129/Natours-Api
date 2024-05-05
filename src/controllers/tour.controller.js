@@ -52,8 +52,8 @@ const updateTour = asyncHandler(async (req, res, next) => {
     new: true
   });
   if (!tour) {
-    return next(new appError('Tour not found for that ID', 404))
-  };
+    return next(new appError('Tour not found for that ID', 404));
+  }
 
   res.status(200).json({
     status: 'success',
@@ -147,12 +147,4 @@ const getMonthlyPlans = asyncHandler(async (req, res, next) => {
   });
 });
 
-export {
-  getAllTours,
-  getTour,
-  addNewTour,
-  updateTour,
-  deleteTour,
-  getTourStats,
-  getMonthlyPlans
-};
+export { getAllTours, getTour, addNewTour, updateTour, deleteTour, getTourStats, getMonthlyPlans };
