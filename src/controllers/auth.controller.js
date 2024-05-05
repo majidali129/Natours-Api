@@ -1,13 +1,24 @@
 import jwt from 'jsonwebtoken';
-import { promisify } from 'util';
+import crypto from 'crypto';
 import { User } from '../models/user.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { appError } from '../utils/appError.js';
+import { sendEmail } from '../utils/sendEmail.js';
 
 const assignToken = id =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN
   });
+const createSendToken = (user, statusCode, res) => {
+  const token = assignToken(user._id);
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user
+    }
+  });
+};
 export const signUp = asyncHandler(async (req, res, next) => {
   // CREATE NEW USER TO DB
   // const user = await User.create({
@@ -21,15 +32,7 @@ export const signUp = asyncHandler(async (req, res, next) => {
     return next(new appError('User creation error', 404));
   }
   // GENERATE TOKEN AND ADD TO RESPONSE FOR CLIENT
-  const token = assignToken(user._id);
-  res.status(201).json({
-    status: 'success',
-    token,
-    message: 'User created successfully 🎆',
-    data: {
-      user
-    }
-  });
+  createSendToken(user, 201, res);
 });
 
 export const logIn = asyncHandler(async (req, res, next) => {
@@ -39,38 +42,83 @@ export const logIn = asyncHandler(async (req, res, next) => {
   // VALIDATE FOR PASSWORD && TOKEN
   // EVERYTHING IS OK. SEND RESPONSE WITH 200 ALONG WITH TOKEN
   const { email, password } = req.body;
-  if (!(email || password)) return next(new appError('Please provide email and password', 400));
+  if (!(email || password))
+    return next(new appError('Please provide email and password', 400));
   const user = await User.findOne({ email }).select('+password');
-  console.log('login user', user);
   if (!user || !(await user.isPasswordCorrect(password, user.password)))
     return next(new appError('Invalid email or passowrd', 401));
-  let token = assignToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token: token
-  });
+  createSendToken(user, 200, res);
 });
 
-export const protectRoute = asyncHandler(async (req, res, next) => {
-  // 1> CHECK IF TOKEN IS EXISTS
-  let token;
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
+export const forgotPassword = asyncHandler(async (req, res, next) => {
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return next(new appError('There is no user with this email !!!!', 404));
 
-  if (!token) return next(new appError('You are not logged in! please log in to get access', 401));
-  // 2> TOKEN VARIFICATION
-  // const decoded = await jwt.verify(token, process.env.JWT_SECRET)
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  // 3> CHACK IF USER EXISTS STILL
-  const currentUser = await User.findById(decoded.id);
-  if (!currentUser)
-    return next(new appError('User belonging to this token does no longer exists', 401));
-  // 4> CHECK IF USER UPDATE HIS PASSWORD AFTER ISSUING NEW TOKEN
-  if (currentUser.checkForPasswordChangeAfterTokenIssue(decoded.iat))
-    return next(new appError('User recently changed password! Please log in again.', 401));
-  // 5> IF EVERYTHING GOES CORRECT, MOVE ON TO NEXT => PROTECTED ROUTE
-  req.user = currentUser;
-  next();
+  //  2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // 3) Send it to user's email
+  const resetUrl = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}.\nIf you didn't forget your password, please ignore this email!`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid for 10 min)',
+      text: message
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email successfully!'
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    console.log('catch block runs');
+
+    console.log(error);
+    return next(
+      new appError('There was an issue sending the email. Try again later!', 500)
+    );
+  }
+});
+
+export const resetPassword = asyncHandler(async (req, res, next) => {
+  // Find user based on token
+  // Varify token => if not expired, user is exist then set new password
+  // Remove reset token from db
+  // Update passowrdChangedAt property
+  // Log in the user, send JWT
+  const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
+  });
+
+  if (!user) return next(new appError('Token is invalid or has expired', 400));
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save({ validateBeforeSave: true });
+  createSendToken(user, 201, res);
+});
+
+export const updatePassword = asyncHandler(async (req, res, next) => {
+  // Get the user from db
+  const user = await User.findById(req.user.id).select('+password');
+  // Check for password if correct
+  if (!(await user.isPasswordCorrect(req.body.currentPassword, user.password)))
+    return next(new appError('Your entered old password is not correct', 401));
+  // if so, update the password
+  user.password = req.body.newPassword;
+  user.confirmPassword = req.body.confirmNewPassword;
+  await user.save();
+  // Log in the user, send JWT
+  createSendToken(user, 200, res);
 });

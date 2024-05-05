@@ -65,6 +65,7 @@ const updateTour = asyncHandler(async (req, res, next) => {
 });
 
 const deleteTour = asyncHandler(async (req, res, next) => {
+  console.log(req);
   const tour = await Tour.deleteOne({ _id: req.params.id });
   if (!tour) return next(new appError('Tour not found for that ID', 404));
 
