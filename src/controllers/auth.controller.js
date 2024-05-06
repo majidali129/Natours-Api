@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 import crypto from 'crypto';
 import { User } from '../models/user.model.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -9,8 +10,22 @@ const assignToken = id =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN
   });
+// expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+const cookieOptions = {
+  expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+  httpOnly: true
+};
+
 const createSendToken = (user, statusCode, res) => {
   const token = assignToken(user._id);
+  if (process.env.NODE_ENV.trim() === 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true
+  });
   res.status(statusCode).json({
     status: 'success',
     token,
@@ -31,6 +46,7 @@ export const signUp = asyncHandler(async (req, res, next) => {
   if (!user) {
     return next(new appError('User creation error', 404));
   }
+  user.password = undefined;
   // GENERATE TOKEN AND ADD TO RESPONSE FOR CLIENT
   createSendToken(user, 201, res);
 });
