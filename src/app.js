@@ -2,6 +2,10 @@ import express from 'express';
 import morgan from 'morgan';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
+import bodyParser from 'body-parser';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
+import hpp from 'hpp';
 
 import tourRouter from './routes/tour.routes.js';
 import userRouter from './routes/user.routes.js';
@@ -24,9 +28,24 @@ if (process.env.NODE_ENV === 'development') {
 }
 // To accept body in req.body
 app.use(express.json({ limit: '100kb' }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+// Sanitize data against noSQL query injection
+app.use(mongoSanitize());
+
+// Sanitization againt XSS attacks
+app.use(xss());
 
 // To prevent brute force / DOS  attacks
 app.use('/api', limiter);
+
+// Preventing the url population
+app.use(
+  hpp({
+    whitelist: ['price', 'duration', 'maxGroupSize', 'difficulty', 'ratingsAverage']
+  })
+);
 
 // To serve static files
 app.use(express.static(`./public`));

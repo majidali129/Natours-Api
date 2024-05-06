@@ -63,6 +63,7 @@ export const logIn = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email }).select('+password');
   if (!user || !(await user.isPasswordCorrect(password, user.password)))
     return next(new appError('Invalid email or passowrd', 401));
+  user.password = undefined;
   createSendToken(user, 200, res);
 });
 
