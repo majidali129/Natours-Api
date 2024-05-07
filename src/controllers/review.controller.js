@@ -1,4 +1,4 @@
-import { Review } from '../models/view.model.js';
+import { Review } from '../models/review.model.js';
 import { appError } from '../utils/appError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
@@ -24,4 +24,12 @@ const addNewReview = asyncHandler(async (req, res, next) => {
   });
 });
 
-export { getAllReviews, addNewReview };
+const deleteReview = asyncHandler(async (req, res, next) => {
+  const result = await Review.deleteMany({ tour: req.params.id });
+  console.log(result);
+  res.status(200).json({
+    status: 'success'
+  });
+});
+
+export { getAllReviews, addNewReview, deleteReview };

@@ -100,18 +100,24 @@ const tourSchema = mongoose.Schema(
     ]
   },
   {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    timestamps: true
   }
 );
+tourSchema.set('toObject', { virtuals: true });
+tourSchema.set('toJSON', { virtuals: true });
 
 // NOTE: virtial propertis never become the part of DB; but they are usefull for business logic/calculations/ as computer preperties
 tourSchema.virtual('durationInWeeks').get(function () {
   return this.duration / 7;
 });
 
-// DOCUMENT MIDDLEWARE, THAT WILL TRIGGER BEFORE AND AFTER THE CURRENT RUNNING DOCUMENT SAVE TO THE DB; IT'LL NOT TRIGGLE ON FINDONE/FINDMANY FINDbyID/FINDbyIDandUPDATE
+// Virtually population
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id',
+  foreignField: 'tour'
+});
+// DOCUMENT MIDDLEWARE, THAT WILL TRIGGER BEFORE AND AFTER THE CURRENT RUNNING DOCUMENT SAVE TO THE DB; IT'LL NOT TRIGGRE ON FINDONE/FINDMANY FINDbyID/FINDbyIDandUPDATE
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name);
   next();
