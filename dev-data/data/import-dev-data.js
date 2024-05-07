@@ -6,12 +6,11 @@ import dotenv from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-import { Tour } from '../../src/models/tour.model.js';
+// import { Tour } from '../../src/models/tour.model.js';
+import { Review } from '../../src/models/view.model.js';
 import { connectDB } from '../../src/db/index.js';
 import { app } from '../../src/app.js';
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8'));
 
 dotenv.config({
   path: './config.env'
@@ -34,7 +33,8 @@ connectDB()
 // import data into db
 const importData = async () => {
   try {
-    await Tour.create(tours);
+    await Review.create(tours);
+    // await Tour.create(tours);
     console.log('Data imported successfully');
   } catch (error) {
     console.log(error);
@@ -45,7 +45,8 @@ const importData = async () => {
 // delete data from db
 const deleteData = async () => {
   try {
-    await Tour.deleteMany();
+    await Review.deleteMany();
+    // await Tour.deleteMany();
     console.log('Data deleted successfully');
   } catch (error) {
     console.log(error);

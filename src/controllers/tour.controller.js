@@ -148,4 +148,12 @@ const getMonthlyPlans = asyncHandler(async (req, res, next) => {
   });
 });
 
-export { getAllTours, getTour, addNewTour, updateTour, deleteTour, getTourStats, getMonthlyPlans };
+export {
+  getAllTours,
+  getTour,
+  addNewTour,
+  updateTour,
+  deleteTour,
+  getTourStats,
+  getMonthlyPlans
+};

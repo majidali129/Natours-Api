@@ -9,6 +9,7 @@ import hpp from 'hpp';
 
 import tourRouter from './routes/tour.routes.js';
 import userRouter from './routes/user.routes.js';
+import reviewRouter from './routes/review.routes.js';
 import { appError } from './utils/appError.js';
 import globalErrorController from './controllers/errorController.js';
 
@@ -58,6 +59,7 @@ app.use((req, _, next) => {
 // ROUTER MOUNTING
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 // This will run if the requested handler does'nt mapped by any request handler, as it'll be at last position in the middleware stack;
 // NOTE: * is for all urls, 'all' is for all request methods;
 

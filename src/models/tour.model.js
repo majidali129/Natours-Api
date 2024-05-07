@@ -1,5 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 import slugify from 'slugify';
+import { User } from './user.model.js';
 
 const tourSchema = mongoose.Schema(
   {
@@ -67,7 +68,36 @@ const tourSchema = mongoose.Schema(
       required: [true, 'A tour must have a cover image']
     },
     images: [String],
-    startDates: [Date]
+    startDates: [Date],
+    startLocation: {
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number
+      }
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+      }
+    ]
   },
   {
     timestamps: true,
@@ -87,15 +117,31 @@ tourSchema.pre('save', function (next) {
   next();
 });
 
+// Responsible for embeding guides
+// tourSchema.pre('save', async function (next) {
+//   const guidePromises = this.guides.map(async id => await User.findById(id));
+//   this.guides = await Promise.all(guidePromises);
+//   next();
+// });
+
 // IT WILL RUN AFTER THE DOCUMENT SAVE TO DB
 tourSchema.post('save', function (doc, next) {
   doc.difficulty = doc.difficulty.toUpperCase();
   next();
 });
 
-// QUERY MEDDLEWARES, WILL RUN WHENEVER WE HIT A QUERY
+// QUERY MEDDLEWARES, WILL RUN WHENEVER WE HIT A QUERY, will return tours that are not secrets
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+// Responsible for populating the reference fields
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -password'
+  });
   next();
 });
 
