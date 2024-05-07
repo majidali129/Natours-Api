@@ -7,7 +7,7 @@ import {
 import { protectRoute } from '../middlewares/protectRoute.js';
 import { restrectRoute } from '../middlewares/restrictRouteByRole.js';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router
   .route('/')
