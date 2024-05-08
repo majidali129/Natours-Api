@@ -47,9 +47,23 @@ const createUser = (req, res) => {
   });
 };
 
+const getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
 const getUser = getOne(User);
 const getAllUsers = getAll(User);
 const deleteUser = deleteOne(User);
 const updateUser = updateOne(User);
 
-export { getAllUsers, getUser, updateUser, createUser, updateMe, deleteMe, deleteUser };
+export {
+  getAllUsers,
+  getMe,
+  getUser,
+  updateUser,
+  createUser,
+  updateMe,
+  deleteMe,
+  deleteUser
+};
