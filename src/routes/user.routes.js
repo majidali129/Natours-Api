@@ -4,7 +4,8 @@ import {
   getUser,
   updateUser,
   updateMe,
-  deleteMe
+  deleteMe,
+  deleteUser
   // createUser
 } from '../controllers/user.controller.js';
 import {
@@ -30,5 +31,5 @@ router.patch('/updateMe', protectRoute, updateMe);
 router.delete('/deleteMe', protectRoute, deleteMe);
 // -----------------------------
 router.route('/').get(getAllUsers);
-// router.route('/:id').get(getUser).patch(updateUser)
+router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 export default router;

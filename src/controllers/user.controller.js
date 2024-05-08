@@ -1,6 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { User } from '../models/user.model.js';
 import { appError } from '../utils/appError.js';
+import { deleteOne, updateOne, getAll, getOne } from './handlerFactory.js';
 
 const filterBody = (obj, ...allowedFields) => {
   const newObj = {};
@@ -9,15 +10,6 @@ const filterBody = (obj, ...allowedFields) => {
   });
   return newObj;
 };
-const getAllUsers = asyncHandler(async (req, res, next) => {
-  const users = await User.find().select('-__v');
-
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: { users }
-  });
-});
 
 const updateMe = asyncHandler(async (req, res, next) => {
   // Give error message if user tries to update passwords
@@ -41,7 +33,6 @@ const updateMe = asyncHandler(async (req, res, next) => {
 
 const deleteMe = asyncHandler(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });
-
   // Send success message, response
   res.status(204).json({
     status: 'success',
@@ -49,23 +40,16 @@ const deleteMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-const getUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'This route is not defined yet'
-  });
-};
 const createUser = (req, res) => {
   res.status(500).json({
     status: 'fail',
     message: 'This route is not defined yet'
   });
 };
-const updateUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'This route is not defined yet'
-  });
-};
 
-export { getAllUsers, getUser, updateUser, createUser, updateMe, deleteMe };
+const getUser = getOne(User);
+const getAllUsers = getAll(User);
+const deleteUser = deleteOne(User);
+const updateUser = updateOne(User);
+
+export { getAllUsers, getUser, updateUser, createUser, updateMe, deleteMe, deleteUser };
