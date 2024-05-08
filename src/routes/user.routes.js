@@ -6,7 +6,8 @@ import {
   deleteMe,
   deleteUser,
   getUser,
-  getMe
+  getMe,
+  createUser
   // createUser
 } from '../controllers/user.controller.js';
 import {
@@ -17,21 +18,26 @@ import {
   updatePassword
 } from '../controllers/auth.controller.js';
 import { protectRoute } from '../middlewares/protectRoute.js';
+import { restrectRoute } from '../middlewares/restrictRouteByRole.js';
 
 const router = express.Router();
 
-// SPECIAL ROUTES FOR AUTHENTICATION ;  AS IT IS A SEPARATE RESOURCE
+// SPECIAL ROUTES FOR AUTHENTICATION
 router.post('/signup', signUp);
 router.post('/login', logIn);
-// ------------------------
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
-router.patch('/updatePassword', protectRoute, updatePassword);
 // ------------------------
-router.get('/me', protectRoute, getMe, getUser);
-router.patch('/updateMe', protectRoute, updateMe);
-router.delete('/deleteMe', protectRoute, deleteMe);
+router.use(protectRoute);
+// Responsible to protect routes next to it
+router.patch('/updatePassword', updatePassword);
 // ------------------------
-router.route('/').get(getAllUsers);
-router.route('/:id').patch(updateUser).delete(deleteUser);
+router.get('/me', getMe, getUser);
+router.patch('/updateMe', updateMe);
+router.delete('/deleteMe', deleteMe);
+// ------------------------
+
+router.use(restrectRoute('admin'));
+router.route('/').get(getAllUsers).post(createUser);
+router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 export default router;

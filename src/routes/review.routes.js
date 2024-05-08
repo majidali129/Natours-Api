@@ -12,15 +12,17 @@ import { addTourUserIds } from '../controllers/review.controller.js';
 
 const router = express.Router({ mergeParams: true });
 
+router.use(protectRoute);
+
 router
   .route('/')
   .get(getAllReviews)
-  .post(protectRoute, restrectRoute('user'), addTourUserIds, addNewReview);
+  .post(restrectRoute('user'), addTourUserIds, addNewReview);
 
 router
   .route('/:id')
   .get(getReview)
-  .delete(protectRoute, restrectRoute('user'), deleteReview)
-  .patch(restrectRoute('user'), updateReview);
+  .delete(restrectRoute('user', 'admin'), deleteReview)
+  .patch(restrectRoute('user', 'admin'), updateReview);
 
 export default router;

@@ -24,14 +24,27 @@ const router = express.Router();
 router.use('/:tourId/reviews', reviewRouter); // Similar to mounting the routes
 // It will go to reviewRouter (in app.js, as it starts with /tours) then from there it'll move to tourRouter. means it'll come back here. By this we decoupled the 2 routes. to access id of tour, we use mergeParams pattern of express;
 
-router.route('/monthly-plan/:year').get(getMonthlyPlans);
-router.route('/tour-stats').get(getTourStats);
-router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
-router.route('/').get(protectRoute, getAllTours).post(addNewTour);
+// we are protecting our api so that public or any sector can use it;
+/*
+1) anyone can get all tours. but only admin & lead guide can add new tour;
+2) anyone can get info about a specific tour. but deleting and updating a tour only allow to admin & lead guide;
+3) if someone wanna access to plans, he have to be authenticated and authorized
+*/
+TODO: router
+  .route('/')
+  .get(getAllTours)
+  .post(protectRoute, restrectRoute('admin', 'lead-guide'), addNewTour);
+
 router
   .route('/:id')
   .get(getTour)
-  .patch(updateTour)
+  .patch(protectRoute, restrectRoute('admin', 'lead-guide'), updateTour)
   .delete(protectRoute, restrectRoute('admin', 'lead-guide'), deleteTour);
+
+router
+  .route('/monthly-plan/:year')
+  .get(protectRoute, restrectRoute('admin', 'lead-guide'), getMonthlyPlans);
+router.route('/tour-stats').get(getTourStats);
+router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
 
 export default router;

@@ -1,7 +1,7 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { User } from '../models/user.model.js';
 import { appError } from '../utils/appError.js';
-import { deleteOne, updateOne, getAll, getOne } from './handlerFactory.js';
+import { deleteOne, updateOne, getAll, getOne, createOne } from './handlerFactory.js';
 
 const filterBody = (obj, ...allowedFields) => {
   const newObj = {};
@@ -9,6 +9,11 @@ const filterBody = (obj, ...allowedFields) => {
     if (allowedFields.includes(el)) newObj[el] = obj[el];
   });
   return newObj;
+};
+
+const getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
 };
 
 const updateMe = asyncHandler(async (req, res, next) => {
@@ -40,18 +45,7 @@ const deleteMe = asyncHandler(async (req, res, next) => {
   });
 });
 
-const createUser = (req, res) => {
-  res.status(500).json({
-    status: 'fail',
-    message: 'This route is not defined yet'
-  });
-};
-
-const getMe = (req, res, next) => {
-  req.params.id = req.user.id;
-  next();
-};
-
+const createUser = createOne(User);
 const getUser = getOne(User);
 const getAllUsers = getAll(User);
 const deleteUser = deleteOne(User);
