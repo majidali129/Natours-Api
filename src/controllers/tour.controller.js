@@ -8,6 +8,13 @@ const addNewTour = createOne(Tour);
 const deleteTour = deleteOne(Tour);
 const getTour = getOne(Tour, { path: 'reviews' });
 
+const aliasTopTours = (req, _, next) => {
+  req.query.limit = 5;
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,difficulty,summary';
+  next();
+};
+
 // PIPELINE FOR CALCULATING STATS
 const getTourStats = asyncHandler(async (req, res, next) => {
   const stats = await Tour.aggregate([
@@ -88,5 +95,6 @@ export {
   updateTour,
   deleteTour,
   getTourStats,
-  getMonthlyPlans
+  getMonthlyPlans,
+  aliasTopTours
 };

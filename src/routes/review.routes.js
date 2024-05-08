@@ -8,7 +8,7 @@ import {
 } from '../controllers/review.controller.js';
 import { protectRoute } from '../middlewares/protectRoute.js';
 import { restrectRoute } from '../middlewares/restrictRouteByRole.js';
-import { addTourUserIds } from '../middlewares/addUserTourIdsToReview.js';
+import { addTourUserIds } from '../controllers/review.controller.js';
 
 const router = express.Router({ mergeParams: true });
 

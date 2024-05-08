@@ -8,7 +8,7 @@ import {
   getTourStats,
   getMonthlyPlans
 } from '../controllers/tour.controller.js';
-import { aliasTopTours } from '../middlewares/aliasTopTours.js';
+import { aliasTopTours } from '../controllers/tour.controller.js';
 import { protectRoute } from '../middlewares/protectRoute.js';
 import { restrectRoute } from '../middlewares/restrictRouteByRole.js';
 // import reviewRouter from './routes/review.routes.js';
