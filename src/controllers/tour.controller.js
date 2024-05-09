@@ -1,4 +1,5 @@
 import { Tour } from '../models/tour.model.js';
+import { appError } from '../utils/appError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { createOne, deleteOne, getAll, getOne, updateOne } from './handlerFactory.js';
 
@@ -88,6 +89,64 @@ const getMonthlyPlans = asyncHandler(async (req, res, next) => {
   });
 });
 
+// /tours-within/:distance/center/:latlng/unit/:unit
+// /tours-within/400/center/34.0996666470141,-118.17805010835912/mi
+const getToursWithin = asyncHandler(async(req, res, next) => {
+  const {distance,latlng, unit} = req.params;
+  const [lat, lng] = latlng.split(',');
+  const radius = unit === 'mi'? distance / 3963.2 : distance / 6378.1;
+
+  if(!lat || !lng) next(new appError('Please provide latitude and longitude in the formate lat,lng', 400))
+
+
+    const tours = await Tour.find({
+      startLocation: {
+        $geoWithin: {
+          $centerSphere: [[lng, lat], radius]
+        }
+      }
+    });
+
+    res.status(200).json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        data:tours
+      }
+    })
+})
+
+const getDstances = asyncHandler(async(req, res, next) => {
+  const {latlng, unit} = req.params;
+  const [lat, lng] = latlng.split(',');
+  const multiplier = unit === 'mi'? 0.000621371: 0.001
+  if(!lat || !lng) next(new appError('Please provide latitude and longitude in the formate lat,lng', 400))
+
+    const distances = await Tour.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [lng*1 , lat*1]
+          },
+          distanceField: 'distance',
+          distanceMultiplier: multiplier
+        },
+      },
+      {
+        $project:{
+        name: 1,
+        distance: 1
+      }
+    }
+    ])
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data:distances
+    }
+  })
+})
 export {
   getAllTours,
   getTour,
@@ -96,5 +155,7 @@ export {
   deleteTour,
   getTourStats,
   getMonthlyPlans,
-  aliasTopTours
+  aliasTopTours,
+  getToursWithin,
+  getDstances
 };

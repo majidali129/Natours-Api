@@ -6,7 +6,9 @@ import {
   getTour,
   updateTour,
   getTourStats,
-  getMonthlyPlans
+  getMonthlyPlans,
+  getToursWithin,
+  getDstances
 } from '../controllers/tour.controller.js';
 import { aliasTopTours } from '../controllers/tour.controller.js';
 import { protectRoute } from '../middlewares/protectRoute.js';
@@ -16,9 +18,10 @@ import reviewRouter from '../routes/review.routes.js';
 
 const router = express.Router();
 
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(getToursWithin)
+router.route('/distances/:latlng/unit/:unit').get(getDstances)
 // Nested routing in express
 // router.route('/:tourId/review').post(protectRoute, restrectRoute('user'), addNewReview);
-
 // here we are telling to express, go and use reviewRouter if you ever encounter route like /:id/review
 // Note: router itself is a middleware. that's why we can use 'use' on it to instruct for usage of reviewRouter
 router.use('/:tourId/reviews', reviewRouter); // Similar to mounting the routes
@@ -46,5 +49,7 @@ router
   .get(protectRoute, restrectRoute('admin', 'lead-guide'), getMonthlyPlans);
 router.route('/tour-stats').get(getTourStats);
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours);
+
+// /tours-within/400/center/34.0996666470141, -118.17805010835912/mi
 
 export default router;

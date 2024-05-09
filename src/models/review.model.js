@@ -26,6 +26,8 @@ const reviewSchema = mongoose.Schema(
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
+
+reviewSchema.index({tour: 1, user: 1}, { unique: true })
 reviewSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'user',
@@ -60,21 +62,22 @@ reviewSchema.statics.calculateAverageRatings = async function (tourId) {
     });
 };
 
+// I'll only execute after the new review added to db and then it'll update fields in tour's document;
 reviewSchema.post('save', function () {
   // this.constructor.calculateAverageRatings(this.tour);
   this.constructor.calculateAverageRatings(this.tour);
 });
 
+// Uddating the property is possible via queries.
 /*
 findByIdAndUpdate
 findByIdAndDelete
 
 these two are not for document. But for queries;
-So in query, we don't have direct access to document .
+So in query, we don't have direct access to document.
 */
 reviewSchema.pre(/^findOneAnd/, async function (next) {
-  this.r = await this.findOne();
-  console.log(this.r);
+  this.r = await this.findOne(); // this will reture current query. which is newly added review
   next();
 });
 
@@ -82,4 +85,4 @@ reviewSchema.post(/^findOneAnd/, async function () {
   // await this.findOne(); does NOT work here, query has already executed
   await this.r.constructor.calcAverageRatings(this.r.tour);
 });
-export const Review = mongoose.model('Review', reviewSchema);
+export const Review = mongoose.model('Review',reviewSchema)
