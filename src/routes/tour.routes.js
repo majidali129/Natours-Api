@@ -30,7 +30,7 @@ router.use('/:tourId/reviews', reviewRouter); // Similar to mounting the routes
 2) anyone can get info about a specific tour. but deleting and updating a tour only allow to admin & lead guide;
 3) if someone wanna access to plans, he have to be authenticated and authorized
 */
-TODO: router
+router
   .route('/')
   .get(getAllTours)
   .post(protectRoute, restrectRoute('admin', 'lead-guide'), addNewTour);

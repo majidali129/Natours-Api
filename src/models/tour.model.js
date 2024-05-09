@@ -156,4 +156,7 @@ tourSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
+
+// INDEXES FOR QUERIES
+tourSchema.index({ price: 1 });
 export const Tour = mongoose.model('Tour', tourSchema);
